@@ -39,7 +39,7 @@ public class ComprehensiveTestApp {
         // 2. Row-count integrity check (≥15 rows required per table)
         // ------------------------------------------------------------------ //
         section("2. Data Integrity (Row Counts ≥ 15)");
-        String[] tables = {"Users", "Posts", "Comments", "Reactions", "Connections"};
+        String[] tables = {"Users", "Posts", "Comments", "Reactions", "Connections", "Projects", "Applications"};
         try (Connection conn = DBConnection.getConnection()) {
             for (String table : tables) {
                 try (Statement st = conn.createStatement();
@@ -255,6 +255,99 @@ public class ComprehensiveTestApp {
         // DELETE
         boolean connDeleted = ConnectionDAO.deleteConnection(testConnId, aliceIdC);
         assertTrue("deleteConnection", connDeleted);
+
+        // ------------------------------------------------------------------ //
+        // 8. ProjectDAO CRUD
+        // ------------------------------------------------------------------ //
+        section("8. ProjectDAO CRUD");
+
+        // CREATE
+        boolean projectCreated = ProjectDAO.createProject(aliceId, "Test Project by Suite",
+                "Auto-generated test project for collaborators", "Web Dev");
+        assertTrue("createProject", projectCreated);
+
+        // READ — list all projects
+        List<String> allProjects = ProjectDAO.listProjects();
+        assertTrue("listProjects() returns ≥1 project", !allProjects.isEmpty());
+
+        // Find the test project ID
+        int testProjectId = -1;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT project_id FROM Projects WHERE title = ? AND creator_id = ? ORDER BY created_at DESC LIMIT 1")) {
+            ps.setString(1, "Test Project by Suite");
+            ps.setInt(2, aliceId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) testProjectId = rs.getInt("project_id");
+        } catch (SQLException e) {
+            fail("Locate test project: " + e.getMessage());
+        }
+        assertTrue("test project found (ID=" + testProjectId + ")", testProjectId > 0);
+
+        // READ — by ID
+        String projectDetail = ProjectDAO.getProjectById(testProjectId);
+        assertTrue("getProjectById(" + testProjectId + ") not null", projectDetail != null);
+
+        // READ — by creator
+        List<String> myProjects = ProjectDAO.getProjectsByCreator(aliceId);
+        assertTrue("getProjectsByCreator(alice) not empty", !myProjects.isEmpty());
+
+        // READ — search by category
+        List<String> byCategory = ProjectDAO.searchByCategory("Web Dev");
+        assertTrue("searchByCategory(Web Dev) not empty", !byCategory.isEmpty());
+
+        // UPDATE
+        boolean projectUpdated = ProjectDAO.updateProject(testProjectId, aliceId,
+                "Updated Test Project", "Updated description", "AI/ML", "open");
+        assertTrue("updateProject", projectUpdated);
+
+        // ------------------------------------------------------------------ //
+        // 9. ApplicationDAO CRUD
+        // ------------------------------------------------------------------ //
+        section("9. ApplicationDAO CRUD");
+
+        // Use bob (user_id 2) to apply to alice's test project
+        int bobId = UserDAO.login("bob", "pass123");
+        assertTrue("Login bob for application test → ID=" + bobId, bobId > 0);
+
+        // CREATE — apply
+        boolean applied = ApplicationDAO.applyToProject(testProjectId, bobId,
+                "I want to join this project and contribute to the backend");
+        assertTrue("applyToProject(bob applies to alice project)", applied);
+
+        // READ — applications to alice's project
+        List<String> receivedApps = ApplicationDAO.getApplicationsByProject(testProjectId);
+        assertTrue("getApplicationsByProject() not empty", !receivedApps.isEmpty());
+
+        // READ — bob's sent applications
+        List<String> myApps = ApplicationDAO.getMyApplications(bobId);
+        assertTrue("getMyApplications(bob) not empty", !myApps.isEmpty());
+
+        // Find the application ID
+        int testAppId = -1;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT application_id FROM Applications WHERE project_id = ? AND applicant_id = ? LIMIT 1")) {
+            ps.setInt(1, testProjectId);
+            ps.setInt(2, bobId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) testAppId = rs.getInt("application_id");
+        } catch (SQLException e) {
+            fail("Locate test application: " + e.getMessage());
+        }
+        assertTrue("test application found (ID=" + testAppId + ")", testAppId > 0);
+
+        // UPDATE — alice accepts bob's application
+        boolean statusUpdated = ApplicationDAO.updateApplicationStatus(testAppId, aliceId, "accepted");
+        assertTrue("updateApplicationStatus → accepted", statusUpdated);
+
+        // DELETE — bob withdraws (cleanup)
+        boolean withdrawn = ApplicationDAO.withdrawApplication(testAppId, bobId);
+        assertTrue("withdrawApplication (cleanup)", withdrawn);
+
+        // DELETE project (cleanup)
+        boolean projectDeleted = ProjectDAO.deleteProject(testProjectId, aliceId);
+        assertTrue("deleteProject (cleanup)", projectDeleted);
 
         // ------------------------------------------------------------------ //
         // Summary

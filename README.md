@@ -1,8 +1,8 @@
 # CirclO — Micro Social Platform
 
-**CMPE 172 — Enterprise Software Platforms**  
+**CMPE 157A**
 **Team:** Dushan Siriwardana (014312454) · Bui Bao Tran Tran (017005482)  
-**Submission Date:** May 9, 2026
+**Submission Date:** May 11, 2026
 
 ---
 

@@ -72,6 +72,7 @@ public class SocialDemoApp {
             System.out.println(" 3. Comments");
             System.out.println(" 4. Reactions");
             System.out.println(" 5. Connections");
+            System.out.println(" 6. Projects (Find Collaborators)");
             System.out.println(" 0. Logout");
             System.out.print("Choice: ");
             String c = scanner.nextLine().trim();
@@ -85,6 +86,8 @@ public class SocialDemoApp {
                 reactionsMenu();
             } else if (c.equals("5")) {
                 connectionsMenu();
+            } else if (c.equals("6")) {
+                projectsMenu();
             } else if (c.equals("0")) {
                 currentUserId = -1;
                 return;
@@ -333,6 +336,108 @@ public class SocialDemoApp {
     }
 
     // -------------------------------------------------------------------------
+    // Projects (Find Collaborators)
+    // -------------------------------------------------------------------------
+
+    private static void projectsMenu() {
+        while (true) {
+            System.out.println("\n--- Projects (Find Collaborators) ---");
+            System.out.println(" 1. Browse all projects");
+            System.out.println(" 2. Browse by category");
+            System.out.println(" 3. View project details");
+            System.out.println(" 4. Post a new project idea");
+            System.out.println(" 5. Update my project");
+            System.out.println(" 6. Delete my project");
+            System.out.println(" 7. Apply to join a project");
+            System.out.println(" 8. My applications (sent)");
+            System.out.println(" 9. Applications to my projects (received)");
+            System.out.println("10. Accept / reject an application");
+            System.out.println("11. Withdraw my application");
+            System.out.println(" 0. Back");
+            System.out.print("Choice: ");
+            String c = scanner.nextLine().trim();
+            if (c.equals("1")) {
+                System.out.println("\n-- All Projects --");
+                List<String> projects = ProjectDAO.listProjects();
+                if (projects.isEmpty()) System.out.println("(no projects posted yet)");
+                else for (String p : projects) System.out.println(p);
+            } else if (c.equals("2")) {
+                System.out.print("Category (AI/ML, Web Dev, Mobile, IoT, AR/VR): ");
+                String cat = scanner.nextLine().trim();
+                List<String> found = ProjectDAO.searchByCategory(cat);
+                if (found.isEmpty()) System.out.println("(no projects in that category)");
+                else for (String p : found) System.out.println(p);
+            } else if (c.equals("3")) {
+                System.out.print("Project ID: ");
+                int pid = readInt();
+                String detail = ProjectDAO.getProjectById(pid);
+                System.out.println(detail != null ? detail : "Project not found.");
+            } else if (c.equals("4")) {
+                System.out.print("Title: ");
+                String title = scanner.nextLine().trim();
+                System.out.print("Description: ");
+                String desc = scanner.nextLine().trim();
+                System.out.print("Category (e.g. AI/ML, Web Dev, Mobile, IoT): ");
+                String cat = scanner.nextLine().trim();
+                System.out.println(ProjectDAO.createProject(currentUserId, title, desc, cat)
+                        ? "Project posted! Others can now apply." : "Failed to post project.");
+            } else if (c.equals("5")) {
+                System.out.print("Project ID to update: ");
+                int pid = readInt();
+                System.out.print("New title: ");
+                String title = scanner.nextLine().trim();
+                System.out.print("New description: ");
+                String desc = scanner.nextLine().trim();
+                System.out.print("New category: ");
+                String cat = scanner.nextLine().trim();
+                System.out.print("Status (open/closed): ");
+                String status = scanner.nextLine().trim();
+                System.out.println(ProjectDAO.updateProject(pid, currentUserId, title, desc, cat, status)
+                        ? "Project updated." : "Update failed (not your project?).");
+            } else if (c.equals("6")) {
+                System.out.print("Project ID to delete: ");
+                int pid = readInt();
+                System.out.println(ProjectDAO.deleteProject(pid, currentUserId)
+                        ? "Project deleted." : "Delete failed (not your project?).");
+            } else if (c.equals("7")) {
+                System.out.print("Project ID to apply to: ");
+                int pid = readInt();
+                System.out.print("Your message (why you want to join): ");
+                String msg = scanner.nextLine().trim();
+                System.out.println(ApplicationDAO.applyToProject(pid, currentUserId, msg)
+                        ? "Application sent!" : "Application failed.");
+            } else if (c.equals("8")) {
+                System.out.println("\n-- My Applications --");
+                List<String> mine = ApplicationDAO.getMyApplications(currentUserId);
+                if (mine.isEmpty()) System.out.println("(you haven't applied to any projects)");
+                else for (String a : mine) System.out.println(a);
+            } else if (c.equals("9")) {
+                System.out.print("Your Project ID to view applicants: ");
+                int pid = readInt();
+                List<String> apps = ApplicationDAO.getApplicationsByProject(pid);
+                if (apps.isEmpty()) System.out.println("(no applications yet)");
+                else for (String a : apps) System.out.println(a);
+            } else if (c.equals("10")) {
+                System.out.print("Application ID: ");
+                int aid = readInt();
+                System.out.print("Decision (accepted/rejected): ");
+                String decision = scanner.nextLine().trim();
+                System.out.println(ApplicationDAO.updateApplicationStatus(aid, currentUserId, decision)
+                        ? "Application " + decision + "." : "Update failed (not your project?).");
+            } else if (c.equals("11")) {
+                System.out.print("Application ID to withdraw: ");
+                int aid = readInt();
+                System.out.println(ApplicationDAO.withdrawApplication(aid, currentUserId)
+                        ? "Application withdrawn." : "Withdraw failed.");
+            } else if (c.equals("0")) {
+                return;
+            } else {
+                System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -347,7 +452,7 @@ public class SocialDemoApp {
 
     private static void printBanner() {
         System.out.println("============================================");
-        System.out.println("   CirclO - Micro Social Platform (CMPE172)");
+        System.out.println("   CirclO Social Platform");
         System.out.println("   Team: Dushan Siriwardana & Bui Bao Tran Tran");
         System.out.println("============================================");
     }
