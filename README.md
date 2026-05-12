@@ -8,7 +8,107 @@
 
 ## Project Overview
 
-CirclO is a console-based micro-social platform where students can connect, share posts, comment, react, and find project collaborators. It is built with Java 11, JDBC, and MySQL 8. The application follows a three-tier architecture (Presentation → Business Logic → Database) and supports full CRUD operations across seven entities: Users, Posts, Comments, Reactions, Connections, Projects, and Applications.
+CirclO is a console-based micro-community application built with **Java 17**, **JDBC**, and **MySQL 8**.  
+It implements a three-tier architecture (Presentation → Logic → Database) and exposes full **CRUD** operations for five entities: Users, Posts, Comments, Reactions, and Connections.
+
+---
+
+## Project Features
+
+- User registration and login
+- Create, update, and delete posts
+- Comment and react to posts
+- Send and accept connection requests
+- Project collaboration board
+- Apply to student projects
+- Cascade delete functionality
+- Secure PreparedStatement queries
+- Full CRUD support across 7 entities
+
+## Skills Demonstrated
+
+- Java programming
+- JDBC database connectivity
+- MySQL relational database design
+- CRUD operations
+- SQL JOIN queries
+- Database normalization (BCNF)
+- DAO design pattern
+- Git and GitHub collaboration.     
+
+
+## Prerequisites
+
+| Tool  | Minimum Version |
+|-------|----------------|
+| Java  | 17             |
+| Maven | 3.6            |
+| MySQL | 8.x            |
+
+---
+
+## Setup (one-time)
+
+### 1. Start MySQL
+```bash
+brew services start mysql
+# or: mysql.server start
+```
+
+### 2. Create the database schema
+```bash
+mysql -u root -p123456789 < database/create_schema.sql
+```
+
+### 3. Load sample data (20 rows per table)
+```bash
+mysql -u root -p123456789 < database/initialize_data.sql
+```
+
+> **Default password:** `123456789`  
+> To use a different password, edit `DB_PASSWORD` in `src/main/java/database/DBConnection.java` (line 22).
+
+---
+
+## Running the Application
+
+### Option A — Maven (recommended)
+```bash
+# Build
+mvn clean compile
+
+# Run the interactive app
+mvn exec:java -Dexec.mainClass="database.SocialDemoApp"
+
+# Run the automated test suite
+mvn exec:java -Dexec.mainClass="database.ComprehensiveTestApp"
+
+# Quick connection smoke-test
+mvn exec:java -Dexec.mainClass="database.TestApp"
+```
+
+### Option B — Fat JAR
+```bash
+mvn package
+java -jar target/circlo-social-platform-1.0-SNAPSHOT.jar
+```
+
+### Option C — VS Code (F5)
+1. Open the project folder in VS Code.
+2. Install **Extension Pack for Java** if prompted.
+3. Press `F5` → choose **"CirclO – Interactive App (SocialDemoApp)"**.
+
+---
+
+## Demo Login Credentials
+
+| Username | Password |
+|----------|----------|
+| alice    | pass123  |
+| bob      | pass123  |
+| charlie  | pass123  |
+
+All 20 sample users share the password `pass123`.
 
 ---
 
@@ -174,6 +274,31 @@ Connections  (connection_id PK, requester_id FK→Users CASCADE, receiver_id FK�
 Projects     (project_id PK, owner_id FK→Users CASCADE, title NOT NULL, description, category, status DEFAULT 'open', created_at)
 Applications (application_id PK, project_id FK→Projects CASCADE, applicant_id FK→Users CASCADE, message, status DEFAULT 'pending', created_at)
 ```
+
+---
+
+## Project Features
+
+- User registration and login
+- Create, update, and delete posts
+- Comment and react to posts
+- Send and accept connection requests
+- Project collaboration board
+- Apply to student projects
+- Cascade delete functionality
+- Secure PreparedStatement queries
+- Full CRUD support across 7 entities
+
+## Skills Demonstrated
+
+- Java programming
+- JDBC database connectivity
+- MySQL relational database design
+- CRUD operations
+- SQL JOIN queries
+- Database normalization (BCNF)
+- DAO design pattern
+- Git and GitHub collaboration.
 
 ---
 
